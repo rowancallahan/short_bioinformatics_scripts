@@ -6,7 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='remove contigs below a certain size from large fasta file')
 parser.add_argument('fasta_file', metavar='fasta')
-parser.add_argument('--min-length', dest='min_len', action='store_value', default=500, help='the minimum length of sequences in order to be kept')
+parser.add_argument('--min-len', default=500, help='the minimum length of sequences in order to be kept')
 parser.add_argument('--in-place',dest='in_place',action='store_true', default=False, help='decides whether the file is edited in place or not')
 
 args = parser.parse_args()
