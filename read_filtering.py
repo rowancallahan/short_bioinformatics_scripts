@@ -6,6 +6,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='remove contigs below a certain size from large fasta file')
 parser.add_argument('fasta_file', metavar='fasta')
+parser.add_argument('--min-length', dest='min_len', action='store_value', default=500, help='the minimum length of sequences in order to be kept')
 parser.add_argument('--in-place',dest='in_place',action='store_true', default=False, help='decides whether the file is edited in place or not')
 
 args = parser.parse_args()
@@ -21,7 +22,7 @@ with open(args.fasta_file,'r') as fasta:
     for line in fasta:
 
         if line[0] == '>':
-            if len(contig)>= 500 and contig_started:
+            if len(contig)>= args.min_len and contig_started:
                 contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
                 output = output + title + "\n" + contig + "\n"
 
@@ -31,7 +32,7 @@ with open(args.fasta_file,'r') as fasta:
         else:
             contig = contig + line.rstrip()
     else:
-        if len(contig)>= 500 and contig_started:
+        if len(contig)>= args.min_len and contig_started:
             contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
             output = output + title + "\n" + contig + "\n"
 
