@@ -39,7 +39,7 @@ with open(args.fasta_file,'r') as fasta:
 
 if args.in_place:
     outfile = args.fasta_file
-    print('inplace specified, writing to %s' % outfile)
+    #print('inplace specified, writing to %s' % outfile)
     with open(outfile,'w') as out:
         out.write(output)
 
