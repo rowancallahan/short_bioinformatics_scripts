@@ -10,11 +10,15 @@ parser.add_argument('--min-len', default=500, type=int, help='the minimum length
 parser.add_argument('--in-place',dest='in_place',action='store_true', default=False, help='decides whether the file is edited in place or not')
 
 args = parser.parse_args()
-outfile = ''
+
+if args.in_place:
+    outfile = args.fasta_file
+    #print('inplace specified, writing to %s' % outfile)
+else:
+    outfile = args.fasta_file[:-6] + '.filtered.fasta' 
 
 
-with open(args.fasta_file,'r') as fasta:
-    output = ''
+with open(args.fasta_file,'r') as fasta, open(outfile,'w') as out:
     contig_started = False
     contig = ''
     title = ''
@@ -24,7 +28,9 @@ with open(args.fasta_file,'r') as fasta:
         if line[0] == '>':
             if len(contig)>= args.min_len and contig_started:
                 contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
-                output = output + title + "\n" + contig + "\n"
+                output = title + "\n" + contig + "\n"
+
+                out.write(output)
 
             contig= ''
             contig_started = True
@@ -34,16 +40,7 @@ with open(args.fasta_file,'r') as fasta:
     else:
         if len(contig)>= args.min_len and contig_started:
             contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
-            output = output + title + "\n" + contig + "\n"
+            output = title + "\n" + contig + "\n"
+            out.write(output)
 
-
-if args.in_place:
-    outfile = args.fasta_file
-    #print('inplace specified, writing to %s' % outfile)
-    with open(outfile,'w') as out:
-        out.write(output)
-
-else:
-    outfile = args.fasta_file[:-6] + '.filtered.fasta' 
-    print(output)
 
