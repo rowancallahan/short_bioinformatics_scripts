@@ -13,41 +13,48 @@ parser.add_argument('window_size',metavar='n',help='number of chars before and a
 #parser.add_argument('--in-place',dest='in_place',action='store_true', default=False, help='decides whether the file is edited in place or not')
 
 args = parser.parse_args()
-
 print(args.fasta_file,args.location_file, args.out_file,args.window_size)
 
-with open(args.location_file, "r") as locations:
-    for line in locations
-        #add all of the different fasta headers to a set
-        #each set should contain an element that also has the start and end locations
-        print(line)
+file = args.location_file 
+contig_file = "contig_test.fasta"
+
+#method for finding windows given a file, this will allow us to multithread later
+def find_window(start,end,contig_name,contig_info,contig_file_name):
+    with open(contig_file_name,"r") as contigs:
+        contig_started = False
+        contig = ''
+        contig_name = re.sub(r'_[0-9]*$','',contig_name)
+        title = contig_name + '-' + contig_info 
+        contig_re = "." + contig_name + ".*"
+        search_key = re.compile(contig_re)
+
+        for line in contigs:
+
+            is_match = search_key.match(line) is not None
+            if line[0] == '>' and is_match:
+                contig_started = True
+            elif line[0] == '>' and not is_match:
+                if len(contig) >= end and contig_started:
+                    contig = contig[start:end] 
+                    contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
+                    output = title + "\n" + contig + "\n"
+                    return output
+            elif contig_started:
+                contig = contig + line.rstrip()
 
 
+with open(file,"r") as locations:
+    for line in locations:
+        parsed = line.split('\t') 
+         
+        id = parsed[0]
+        family = parsed[1]
+        name = parsed[2]
+        gene = parsed[3]
+        start = parsed[5]
+        end = parsed[6]
+        print(id,family,name,gene,start,end)
 
-'''
-with open(args.fasta_file,'r') as fasta, open(outfile,'w') as out:
-    contig_started = False
-    contig = ''
-    title = ''
+        print(find_window(int(start),int(end),name,"testinfo",contig_file))
 
-    for line in fasta:
-
-        if line[0] == '>':
-            if len(contig)>= args.min_len and contig_started:
-                contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
-                output = title + "\n" + contig + "\n"
-
-                out.write(output)
-
-            contig= ''
-            contig_started = True
-            title = line.rstrip()
-        else:
-            contig = contig + line.rstrip()
-    else:
-        if len(contig)>= args.min_len and contig_started:
-            contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
-            output = title + "\n" + contig + "\n"
-            out.write(output)
-'''
 
