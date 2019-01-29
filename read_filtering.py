@@ -3,13 +3,17 @@
 
 #This is written to intentionally have few requirements and only use base python so it can be used as a python command line utility
 import argparse
+import re
 
 parser = argparse.ArgumentParser(description='remove contigs below a certain size from large fasta file')
 parser.add_argument('fasta_file', metavar='fasta')
 parser.add_argument('--min-len', default=500, type=int, help='the minimum length of sequences in order to be kept')
 parser.add_argument('--in-place',dest='in_place',action='store_true', default=False, help='decides whether the file is edited in place or not')
+parser.add_argument('--match', default=".*", type=str, help="the regex to use when filtering ")
+
 
 args = parser.parse_args()
+print(args.match)
 
 if args.in_place:
     outfile = args.fasta_file
@@ -25,8 +29,8 @@ with open(args.fasta_file,'r') as fasta, open(outfile,'w') as out:
 
     for line in fasta:
 
-        if line[0] == '>':
-            if len(contig)>= args.min_len and contig_started:
+        if line[0] == '>': 
+            if len(contig)>= args.min_len and contig_started and re.search(args.match, title):
                 contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
                 output = title + "\n" + contig + "\n"
 
@@ -38,7 +42,7 @@ with open(args.fasta_file,'r') as fasta, open(outfile,'w') as out:
         else:
             contig = contig + line.rstrip()
     else:
-        if len(contig)>= args.min_len and contig_started:
+        if len(contig)>= args.min_len and contig_started and re.search(args.match, title):
             contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
             output = title + "\n" + contig + "\n"
             out.write(output)
