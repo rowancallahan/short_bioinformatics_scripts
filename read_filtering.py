@@ -10,10 +10,11 @@ parser.add_argument('fasta_file', metavar='fasta')
 parser.add_argument('--min-len', default=500, type=int, help='the minimum length of sequences in order to be kept')
 parser.add_argument('--in-place',dest='in_place',action='store_true', default=False, help='decides whether the file is edited in place or not')
 parser.add_argument('--match', default=".*", type=str, help="the regex to use when filtering ")
-
+parser.add_argument('--separate-files', dest='separate', action='store_true', default=False, help='whether to separate sequences out into separate files')
 
 args = parser.parse_args()
 print(args.match)
+print(args.separate)
 
 if args.in_place:
     outfile = args.fasta_file
@@ -22,7 +23,7 @@ else:
     outfile = args.fasta_file[:-6] + '.filtered.fasta' 
 
 
-with open(args.fasta_file,'r') as fasta, open(outfile,'w') as out:
+with open(args.fasta_file,'r') as fasta:
     contig_started = False
     contig = ''
     title = ''
@@ -33,8 +34,11 @@ with open(args.fasta_file,'r') as fasta, open(outfile,'w') as out:
             if len(contig)>= args.min_len and contig_started and re.search(args.match, title):
                 contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
                 output = title + "\n" + contig + "\n"
-
-                out.write(output)
+                if args.separate: #if we are separating make a new file title
+                    outfile = args.fasta_file[:-6] +title.replace(" ","_").replace(">","_") +".fasta"
+		    #replace the whitespace
+                with open(outfile,'a') as out: #open the file and write to it.
+                    out.write(output)
 
             contig= ''
             contig_started = True
@@ -45,6 +49,9 @@ with open(args.fasta_file,'r') as fasta, open(outfile,'w') as out:
         if len(contig)>= args.min_len and contig_started and re.search(args.match, title):
             contig = '\n'.join([contig[i:i+75] for i in range(0,len(contig),75)])
             output = title + "\n" + contig + "\n"
-            out.write(output)
+            if args.separate: #if we are separating make a new file title
+                outfile = args.fasta_file[:-6] + title.replace(" ","_").replace(">","_") + ".fasta" #replace the whitespace
+            with open(outfile,'a') as out: #open the file and write to it.
+                out.write(output)
 
 
