@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 import argparse
+import hashlib
 
 column_list = ['ID', 'Start', 'End']
 forward = pd.DataFrame(columns=column_list)
@@ -41,13 +42,16 @@ def get_orfs(dataframe):
 operon_list = get_orfs(forward)
 operon_list2 = get_orfs(backward)
 
-series1 = pd.Series(operon for operon in operon_list)
-series2 = pd.Series(len(operon) for operon in operon_list)
-series3 = pd.Series(operon for operon in operon_list2)
-series4 = pd.Series(len(operon) for operon in operon_list2)
+forward_list = pd.Series(operon for operon in operon_list)
+forward_length = pd.Series(len(operon) for operon in operon_list)
+forward_operon_id = pd.Series(hashlib.sha1(str(operon).encode("utf-8")).hexdigest() for operon in operon_list)
+backwards_list = pd.Series(operon for operon in operon_list2)
+backwards_length = pd.Series(len(operon) for operon in operon_list2)
+backwards_operon_id = pd.Series(hashlib.sha1(str(operon).encode("utf-8")).hexdigest() for operon in operon_list2)
+ 
 
-forward = pd.concat([series1, series2], axis=1) 
-backward = pd.concat([series3,series4], axis=1)
+forward = pd.concat([forward_list, forward_length, forward_operon_id], axis=1) 
+backward = pd.concat([backwards_list, backwards_length, backwards_operon_id], axis=1)
 
 whole = pd.concat([forward,backward], axis=0, ignore_index=True)
 
