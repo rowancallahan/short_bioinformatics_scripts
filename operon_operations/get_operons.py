@@ -1,22 +1,31 @@
+import re
 import pandas as pd
 import argparse
+
+column_list = ['ID', 'Start', 'End']
+forward = pd.DataFrame(columns=column_list)
+backward = pd.DataFrame(columns=column_list)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("orf_file")
 args = parser.parse_args()
 filename = args.orf_file
-print(filename)
 
-filename_backward = filename
-filename_forward= filename 
-
-forward = pd.read_csv(filename_forward, sep='\t', header=None)
-backward = pd.read_csv(filename_backward, sep='\t', header=None)
+with open(filename) as file:
+    for line in file:
+        split = line.rstrip().split("\t")
+        if len(split) >=8:
+            split[8] = re.sub(';.*;','',split[8]).replace("ID=","")
+            if split[6] == "+":
+                row = pd.Series([split[8], int(split[3]), int(split[4])], index=column_list)
+                forward = forward.append(row, ignore_index=True)
+            elif split[6] == "-":
+                row = pd.Series([split[8], int(split[3]), int(split[4])], index=column_list)
+                backward = backward.append(row, ignore_index=True)
 
 def get_orfs(dataframe):
-
-    distances = - dataframe[2][:-1].reset_index(drop=True) + dataframe[1][1:].reset_index(drop=True)
-    orf_list = dataframe[0][1:].reset_index(drop=True)
+    distances = - dataframe['End'][:-1].reset_index(drop=True) + dataframe['Start'][1:].reset_index(drop=True) #we want the distances between the end of one orf to the start of the next
+    orf_list = dataframe['ID'][1:].reset_index(drop=True)
     grouping = pd.concat([distances,orf_list], axis=1)
     grouping.columns = ['distance','id']
     operon_list = [[dataframe.iloc[0][0]]]
@@ -27,19 +36,25 @@ def get_orfs(dataframe):
         else:
             operon_list.append([grouping.loc[i]['id']])
 
-    length = []
-    for i in range(len(operon_list)):
-        length.append(len(operon_list[i]))
+    return(operon_list)
+
+operon_list = get_orfs(forward)
+operon_list2 = get_orfs(backward)
+
+series1 = pd.Series(str(operon) for operon in operon_list)
+series2 = pd.Series(len(operon) for operon in operon_list)
+series3 = pd.Series(str(operon) for operon in operon_list2)
+series4 = pd.Series(len(operon) for operon in operon_list2)
+
+forward = pd.concat([series1, series2], axis=1) 
+backward = pd.concat([series3,series4], axis=1)
+
+whole = pd.concat([forward,backward], axis=0, ignore_index=True)
 
 
-    return(length, operon_list)
+with pd.option_context('display.max_rows', None, 'display.max_columns', None):
 
-length, operon_list = get_orfs(forward)
-length2, operon_list2 = get_orfs(backward)
+    print(whole)
 
-for num in length:
-    print(num)
-for operon in operon_list:
-    print(operon)
 
 
