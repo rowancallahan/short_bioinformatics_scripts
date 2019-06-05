@@ -41,9 +41,9 @@ def get_orfs(dataframe):
 operon_list = get_orfs(forward)
 operon_list2 = get_orfs(backward)
 
-series1 = pd.Series(str(operon) for operon in operon_list)
+series1 = pd.Series(operon for operon in operon_list)
 series2 = pd.Series(len(operon) for operon in operon_list)
-series3 = pd.Series(str(operon) for operon in operon_list2)
+series3 = pd.Series(operon for operon in operon_list2)
 series4 = pd.Series(len(operon) for operon in operon_list2)
 
 forward = pd.concat([series1, series2], axis=1) 
