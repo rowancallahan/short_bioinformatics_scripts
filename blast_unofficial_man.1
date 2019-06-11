@@ -31,6 +31,8 @@ default is 10
 puts out the file in the specified out format if you 6 is for tab separated, 7 is for tab separated with comments for the names of each of the columns. See blastn (2)
 .IP -perc_identity
 What percent identity does the sequence from the database have to match onto the query sequence.
+.IP -num_alignments <integer> >= 0
+This is the number of database sequences to show alignments for if you get way too many hits then thsi might make it hard to interpret the results.
 
 .SH OUTPUT TYPES
 The following section is a cut and paste from the
