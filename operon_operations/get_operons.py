@@ -9,8 +9,10 @@ backward = pd.DataFrame(columns=column_list)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("orf_file")
+parser.add_argument("outname")
 args = parser.parse_args()
 filename = args.orf_file
+
 
 with open(filename) as file:
     for line in file:
@@ -42,10 +44,10 @@ def get_orfs(dataframe):
 operon_list = get_orfs(forward)
 operon_list2 = get_orfs(backward)
 
-forward_list = pd.Series(operon for operon in operon_list)
+forward_list = pd.Series(",".join(operon) for operon in operon_list)
 forward_length = pd.Series(len(operon) for operon in operon_list)
 forward_operon_id = pd.Series(hashlib.sha1(str(operon).encode("utf-8")).hexdigest() for operon in operon_list)
-backwards_list = pd.Series(operon for operon in operon_list2)
+backwards_list = pd.Series(",".join(operon) for operon in operon_list2)
 backwards_length = pd.Series(len(operon) for operon in operon_list2)
 backwards_operon_id = pd.Series(hashlib.sha1(str(operon).encode("utf-8")).hexdigest() for operon in operon_list2)
  
@@ -55,6 +57,7 @@ backward = pd.concat([backwards_list, backwards_length, backwards_operon_id], ax
 
 whole = pd.concat([forward,backward], axis=0, ignore_index=True)
 
+whole.to_csv(args.outname, sep="\t", encoding="utf-8")
 
 with pd.option_context('display.max_rows', None, 'display.max_columns', None):
 
