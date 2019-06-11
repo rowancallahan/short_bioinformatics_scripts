@@ -5,9 +5,11 @@ import re
 parser = argparse.ArgumentParser()
 parser.add_argument("orf_file")
 parser.add_argument("hits_file")
+parser.add_argument("out_file")
 args = parser.parse_args()
 filename = args.orf_file
 hits = args.hits_file
+fileout = args.out_file 
 genome_id = args.hits_file[:-27] #TODO need to parse the name of this file correctly
 
 #read in and clean all of the files
@@ -47,5 +49,5 @@ df = pd.concat(rows, axis=1).T
 df['num_interactors'] = df.groupby('locus')['locus'].transform('count')
 
 print(df)
-
+pd.to_csv(fileout,sep='\t',index=False)
 
