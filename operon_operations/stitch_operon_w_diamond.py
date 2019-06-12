@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 import re
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("orf_file")
@@ -10,7 +11,7 @@ args = parser.parse_args()
 filename = args.orf_file
 hits = args.hits_file
 fileout = args.out_file 
-genome_id = args.hits_file[:-27] #TODO need to parse the name of this file correctly
+genome_id = os.path.basename(args.hits_file)[:-27] #TODO need to parse the name of this file correctly
 
 #read in and clean all of the files
 orfs_file = pd.read_csv(filename, sep="\t",encoding="utf-8",index_col=0)
@@ -32,10 +33,10 @@ rows = []
 for row_num in range(len(hits)):
     index = str(hits.iloc[row_num, 0])
     locus_id = locus_dict[index]
-    orfs = orfs_file.loc[orfs_file.iloc[:,2] == locus_id].iloc[0]
+    orfs = orfs_file.loc[orfs_file.iloc[:,2] == locus_id].iloc[0][0]
     n_genes = len(str(orfs).split(',')) 
 
-    row_list = [genome_id, hits.iloc[row_num, 1] , locus_id, orfs, n_genes, "NaN"] 
+    row_list = [genome_id, hits.iloc[row_num, 1] , locus_id, str(orfs), n_genes, "NaN"] 
     index_list = ["genome_id", "human_interactor", "locus", "orfs", "n_orfs", "num_interactors"]
     row = pd.Series(row_list, index=index_list)
     rows.append(row)
@@ -48,6 +49,8 @@ df = pd.concat(rows, axis=1).T
 #this will tell us how many human interactors are shared in this locus
 df['num_interactors'] = df.groupby('locus')['locus'].transform('count')
 
-print(df)
-pd.to_csv(fileout,sep='\t',index=False)
+print(df[["orfs","n_orfs"]])
+df.to_csv(fileout,sep='\t',index=False)
+
+
 
